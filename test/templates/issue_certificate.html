@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12">
+            <div class="flex justify-center mb-4">
+                <svg class="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">Issue Certificate</h2>
+            <p class="mt-2 text-gray-600">Create and issue a new blockchain-verified certificate</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form action="{% url 'certificates:issue' %}" method="POST" enctype="multipart/form-data" class="space-y-6" onSubmit="return handleCertificateSubmission(event)">
+                {% csrf_token %}
+                
+                <!-- Student Name -->
+                <div>
+                    <label for="student_name" class="block text-sm font-medium text-gray-700">Student Name</label>
+                    <input type="text" name="student_name" id="student_name" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- Course Name -->
+                <div>
+                    <label for="course_name" class="block text-sm font-medium text-gray-700">Course Name</label>
+                    <input type="text" name="course_name" id="course_name" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- Issue Date -->
+                <div>
+                    <label for="issue_date" class="block text-sm font-medium text-gray-700">Issue Date</label>
+                    <input type="date" name="issue_date" id="issue_date" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- Certificate File -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Certificate File</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="certificate_file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                    <span>Upload a file</span>
+                                    <input id="certificate_file" name="certificate_file" type="file" class="sr-only" required>
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PDF up to 10MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" id="submit-button"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span id="button-text">Issue Certificate</span>
+                        <span id="button-loading" class="hidden">
+                            Processing... Please confirm in MetaMask
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+<script>
+    async function handleCertificateSubmission(event) {
+        event.preventDefault();
+        
+        if (typeof window.ethereum === 'undefined') {
+            showAlert('error', 'Please install MetaMask to issue certificates!');
+            return false;
+        }
+
+        try {
+            // Connect to MetaMask
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const account = accounts[0];
+            
+            showAlert('success', 'Wallet connected successfully! Processing transaction...');
+            
+            // Get form data and file
+            const formData = new FormData(event.target);
+            const file = formData.get('certificate_file');
+            
+            // Create certificate data object
+            const certificateData = {
+                studentName: formData.get('student_name'),
+                courseName: formData.get('course_name'),
+                issueDate: formData.get('issue_date'),
+                fileName: file.name
+            };
+
+            // Create certificate hash including file data
+            const certificateHash = Web3.utils.soliditySha3(
+                JSON.stringify(certificateData)
+            );
+
+            // Update button state
+            const submitButton = document.getElementById('submit-button');
+            const buttonText = document.getElementById('button-text');
+            const buttonLoading = document.getElementById('button-loading');
+            buttonText.classList.add('hidden');
+            buttonLoading.classList.remove('hidden');
+            submitButton.disabled = true;
+
+            // Initialize Web3 and contract
+            const web3 = new Web3(window.ethereum);
+            const contractAddress = '0x803e318337585de386Ac8df6A5E1770417680291';
+            const contractABI = [
+                // Add the ABI from your deployed contract
+                {
+                    "inputs": [
+                        {
+                            "internalType": "bytes32",
+                            "name": "_hash",
+                            "type": "bytes32"
+                        }
+                    ],
+                    "name": "issueCertificate",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+                // ... add other contract functions from your ABI
+            ];
+            
+            const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+            // Issue certificate on blockchain
+            const gas = await contract.methods.issueCertificate(certificateHash)
+                .estimateGas({ from: account });
+
+            const transaction = await contract.methods.issueCertificate(certificateHash)
+                .send({
+                    from: account,
+                    gas: Math.round(gas * 1.2) // Add 20% buffer for gas estimation
+                });
+
+            if (transaction.status) {
+                showAlert('success', 'Transaction completed successfully!');
+                
+                // Create form data for file upload
+                const uploadFormData = new FormData();
+                uploadFormData.append('student_name', certificateData.studentName);
+                uploadFormData.append('course_name', certificateData.courseName);
+                uploadFormData.append('issue_date', certificateData.issueDate);
+                uploadFormData.append('certificate_file', file);
+                uploadFormData.append('transaction_hash', transaction.transactionHash);
+                uploadFormData.append('certificate_hash', certificateHash);
+
+                // Submit to Django backend
+                const response = await fetch('{% url "certificates:issue" %}', {
+                    method: 'POST',
+                    body: uploadFormData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        // Update certificates list in the UI
+                        const certificatesList = document.querySelector('.certificates-list');
+                        if (certificatesList && data.certificates) {
+                            certificatesList.innerHTML = data.certificates.map(cert => `
+                                <div class="border rounded-lg p-4 flex justify-between items-center">
+                                    <div>
+                                        <h3 class="font-medium">${cert.course_name}</h3>
+                                        <p class="text-sm text-gray-600">Issued to: ${cert.student_name}</p>
+                                        <p class="text-xs text-gray-500">Issued on: ${cert.issue_date}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="px-3 py-1 rounded-full text-sm ${
+                                            cert.status === 'Issued' ? 'bg-green-100 text-green-800' : 
+                                            cert.status === 'Revoked' ? 'bg-red-100 text-red-800' : 
+                                            'bg-yellow-100 text-yellow-800'
+                                        }">
+                                            ${cert.status}
+                                        </span>
+                                        <a href="/certificates/${cert.certificate_hash}" 
+                                           class="text-indigo-600 hover:text-indigo-900">View</a>
+                                    </div>
+                                </div>
+                            `).join('');
+                        }
+                        // Redirect after a short delay to show the updated list
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                    } else {
+                        throw new Error(data.message || 'Failed to save certificate');
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('error', error.message || 'Transaction failed');
+            
+            // Reset button state
+            const submitButton = document.getElementById('submit-button');
+            const buttonText = document.getElementById('button-text');
+            const buttonLoading = document.getElementById('button-loading');
+            buttonText.classList.remove('hidden');
+            buttonLoading.classList.add('hidden');
+            submitButton.disabled = false;
+        }
+    }
+
+    // Add drag and drop functionality
+    const dropZone = document.querySelector('.border-dashed');
+    const fileInput = document.getElementById('certificate_file');
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-indigo-500');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-indigo-500');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500');
+        fileInput.files = e.dataTransfer.files;
+    });
+
+    // Add this function for showing alerts
+    function showAlert(type, message) {
+        // Remove existing alerts
+        const existingAlert = document.querySelector('.alert-popup');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert-popup fixed top-4 right-4 p-4 rounded-lg shadow-lg animate-slide-in z-50 ${
+            type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+        }`;
+
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    ${type === 'success' 
+                        ? '<svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>'
+                        : '<svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>'
+                    }'
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium">${message}</p>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        // Remove alert after 5 seconds
+        setTimeout(() => {
+            alertDiv.classList.add('animate-slide-out');
+            setTimeout(() => alertDiv.remove(), 500);
+        }, 5000);
+    }
+</script>
+{% endblock %} 

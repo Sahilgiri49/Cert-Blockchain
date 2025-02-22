@@ -1,0 +1,17 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2>New Certificate Request</h2>
+    <p>A new certificate request requires your approval:</p>
+    
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Student Name:</strong> {{ student_name }}</p>
+        <p><strong>Student ID:</strong> {{ student_id }}</p>
+        <p><strong>Course:</strong> {{ course_name }}</p>
+        <p><strong>Request ID:</strong> {{ request_id }}</p>
+        <p><strong>Submitted:</strong> {{ request_date }}</p>
+    </div>
+    
+    <p>Please review this request in your dashboard.</p>
+    <a href="{{ dashboard_url }}" style="background: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        Review Request
+    </a>
+</div> 

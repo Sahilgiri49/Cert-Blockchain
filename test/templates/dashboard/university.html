@@ -1,0 +1,215 @@
+{% extends 'base.html' %} {% block content %}
+<div class="space-y-6" style ="margin: 1  0px;">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Institution Dashboard</h1>
+      <p class="text-gray-600 mt-1">Welcome back, {{ user.username }}</p>
+    </div>
+    <div class="flex items-center space-x-4">
+      <span class="wallet-address bg-gray-100 px-4 py-2 rounded-md text-sm">
+        {{ user.wallet_address|default:"Connect Wallet" }}
+      </span>
+      <a
+        href="{% url 'certificates:issue' %}"
+        class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+      >
+        Issue Certificate
+      </a>
+    </div>
+  </div>
+
+  <!-- Certificate Management Section -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-semibold text-gray-900">Issued Certificates</h2>
+      <select class="border border-gray-300 rounded-md px-3 py-2">
+        <option value="all">All Status</option>
+        <option value="verified">Verified</option>
+        <option value="revoked">Revoked</option>
+      </select>
+    </div>
+
+    <!-- Certificates List -->
+    <div class="space-y-4">
+      {% if certificates %} {% for certificate in certificates %}
+      <div class="border rounded-lg p-4 flex justify-between items-center">
+        <div>
+          <h3 class="font-medium">{{ certificate.title }}</h3>
+          <p class="text-sm text-gray-600">
+            Issued to: {{ certificate.student_name }}
+          </p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span
+            class="px-3 py-1 rounded-full text-sm {% if certificate.status == 'verified' %} bg-green-100 text-green-800 {% else %} bg-red-100 text-red-800 {% endif %}"
+          >
+            {{ certificate.status|title }}
+          </span>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p class="text-gray-500 text-center py-4">No certificates issued yet</p>
+      {% endif %}
+    </div>
+  </div>
+  <!-- Rejection Modal -->
+  <div
+    id="rejectModal"
+    class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
+  >
+    <div
+      class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+    >
+      <form id="rejectForm" method="POST" action="" class="space-y-4">
+        {% csrf_token %}
+        <h3 class="text-lg font-medium">Reject Certificate Request</h3>
+        <div>
+          <label
+            for="rejection_reason"
+            class="block text-sm font-medium text-gray-700"
+            >Reason for Rejection</label
+          >
+          <textarea
+            name="rejection_reason"
+            id="rejection_reason"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+          ></textarea>
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button
+            type="button"
+            onclick="hideRejectModal()"
+            class="bg-gray-200 px-4 py-2 rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            name="action"
+            value="reject"
+            class="bg-red-500 text-white px-4 py-2 rounded-md"
+          >
+            Confirm Reject
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-900">Certificate Requests</h2>
+    </div>
+
+    <!-- Pending Requests Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h3 class="text-xl font-semibold mb-4">Pending Requests</h3>
+      <div class="space-y-4">
+        {% for request in pending_requests %}
+        <div class="border rounded-lg p-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-medium">{{ request.course_name }}</h4>
+              <p class="text-sm text-gray-600">
+                Student: {{ request.student.get_full_name }}
+              </p>
+              <p class="text-sm text-gray-600">
+                ID: {{ request.student_identifier }}
+              </p>
+              <p class="text-sm text-gray-600">
+                Completion Date: {{ request.completion_date }}
+              </p>
+            </div>
+            <div class="flex space-x-2">
+              <form
+                method="POST"
+                action="{% url 'certificates:approve_request' request.id %}"
+                class="inline"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  name="action"
+                  value="approve"
+                  class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                >
+                  Approve
+                </button>
+              </form>
+              <button
+                onclick="showRejectModal('{{ request.id }}')"
+                class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-4">No pending requests</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div
+      id="rejectModal"
+      class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
+    >
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+      >
+        <form id="rejectForm" method="POST" action="" class="space-y-4">
+          {% csrf_token %}
+          <h3 class="text-lg font-medium">Reject Certificate Request</h3>
+          <div>
+            <label
+              for="rejection_reason"
+              class="block text-sm font-medium text-gray-700"
+              >Reason for Rejection</label
+            >
+            <textarea
+              name="rejection_reason"
+              id="rejection_reason"
+              required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+            ></textarea>
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              onclick="hideRejectModal()"
+              class="bg-gray-200 px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              name="action"
+              value="reject"
+              class="bg-red-500 text-white px-4 py-2 rounded-md"
+            >
+              Confirm Reject
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  function showRejectModal(requestId) {
+    const modal = document.getElementById("rejectModal");
+    const form = document.getElementById("rejectForm");
+    form.action = `/certificates/approve-request/${requestId}/`;
+    modal.classList.remove("hidden");
+  }
+
+  function hideRejectModal() {
+    document.getElementById("rejectModal").classList.add("hidden");
+  }
+</script>
+{% endblock %}

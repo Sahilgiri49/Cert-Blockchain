@@ -1,0 +1,7 @@
+node_modules/
+static/css/styles.css
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+media/ 

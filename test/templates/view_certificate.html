@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-3xl font-bold text-gray-900">Certificate Details</h1>
+    <p><strong>Student:</strong> {{ certificate.student.username }}</p>
+    <p><strong>Course:</strong> {{ certificate.course_name }}</p>
+    <p><strong>Issue Date:</strong> {{ certificate.issue_date|date:"M d, Y" }}</p>
+    <p><strong>Hash:</strong> {{ certificate.certificate_hash }}</p>
+    <a href="{{ certificate.certificate_file.url }}" class="text-indigo-600 hover:text-indigo-800">Download Certificate</a>
+</div>
+{% endblock %} 

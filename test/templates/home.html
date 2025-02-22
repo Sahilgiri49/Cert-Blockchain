@@ -1,0 +1,473 @@
+{% extends 'base.html' %} {% block content %}
+<div class="relative min-h-screen bg-gray-900 overflow-hidden">
+    <!-- Animated Background Effects -->
+    <div class="absolute inset-0">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-purple-900/20 to-pink-900/20"></div>
+        <div class="absolute inset-0">
+            <div class="h-full w-full bg-black">
+                <div class="absolute inset-0 bg-grid-white/[0.05] bg-[length:50px_50px]"></div>
+                <div class="absolute h-full w-full">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <div class="h-[40rem] w-[40rem] animate-pulse">
+                            <div class="absolute inset-0 rotate-45 rounded-full bg-gradient-to-r from-indigo-600/20 to-purple-600/20 blur-3xl"></div>
+                            <div class="absolute inset-0 -rotate-45 rounded-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-3xl"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+            <div class="text-center space-y-8">
+                <!-- Glowing Title -->
+                <div class="relative">
+                    <div class="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg blur-xl opacity-20 animate-pulse"></div>
+                    <h1 class="relative text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x">
+                        Secure Digital Certificates on the Blockchain
+                    </h1>
+                </div>
+
+                <p class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
+                    Issue, verify, and manage digital certificates with complete security and transparency
+                </p>
+
+                <!-- Glowing Buttons -->
+                <div class="flex justify-center space-x-6">
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'certificates:login' %}?next={% url 'certificates:verify' %}"
+                       class="group relative px-8 py-3 rounded-lg overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 transition-all duration-300"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 group-hover:opacity-50 transition-opacity duration-300 blur-xl"></div>
+                        <span class="relative text-white font-semibold">Verify Certificate</span>
+                    </a>
+                    <a href="{% url 'certificates:register' %}"
+                       class="group relative px-8 py-3 rounded-lg overflow-hidden border border-indigo-500/50">
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span class="relative text-indigo-400 font-semibold group-hover:text-white transition-colors duration-300">Get Started</span>
+                    </a>
+                    {% else %}
+                    <a
+                        href="{% url 'certificates:verify' %}"
+                        class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/25"
+                    >
+                        Verify Certificate
+                    </a>
+                    {% if user.role == 'university' or user.role == 'employer' %}
+                    <a
+                        href="{% url 'certificates:issue' %}"
+                        class="border-2 border-indigo-500 text-indigo-400 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-500 hover:text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/25"
+                    >
+                        Issue Certificate
+                    </a>
+                    {% endif %} {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white text-gray-800 py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-4xl font-bold text-center mb-16">Why Choose CertChain?</h2>
+    <!-- Add your features section here -->
+  </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="bg-gray-50 py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-4xl font-bold text-center mb-16">How It Works</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div
+        class="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
+      >
+        <div class="flex items-start space-x-4">
+          <div class="bg-indigo-100 rounded-lg p-3">
+            <svg
+              class="w-8 h-8 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">Issue Certificate</h3>
+            <p class="text-gray-600">
+              Institutions issue digital certificates that are securely stored
+              on the blockchain
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
+      >
+        <div class="flex items-start space-x-4">
+          <div class="bg-purple-100 rounded-lg p-3">
+            <svg
+              class="w-8 h-8 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">Verify Instantly</h3>
+            <p class="text-gray-600">
+              Quick and reliable verification using blockchain technology
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
+      >
+        <div class="flex items-start space-x-4">
+          <div class="bg-green-100 rounded-lg p-3">
+            <svg
+              class="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold mb-2">Share Securely</h3>
+            <p class="text-gray-600">
+              Share verified credentials with employers and institutions
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features Section -->
+<div class="bg-white py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-4xl font-bold text-center mb-16">Platform Features</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Feature cards here (6 cards with different features) -->
+      <div
+        class="bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors"
+      >
+        <div class="text-indigo-600 mb-4">
+          <svg
+            class="w-10 h-10"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-2">Blockchain Security</h3>
+        <p class="text-gray-600">
+          Immutable records secured by blockchain technology
+        </p>
+      </div>
+      <!-- Add 5 more feature cards with different icons and descriptions -->
+    </div>
+  </div>
+</div>
+
+<!-- Testimonials Section -->
+<div class="bg-gray-50 py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-4xl font-bold text-center mb-16">What Our Users Say</h2>
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-xl shadow-md p-8">
+        <div class="flex items-center space-x-4 mb-6">
+          <div class="w-16 h-16 bg-gray-200 rounded-full"></div>
+          <div>
+            <h3 class="text-xl font-semibold">John Smith</h3>
+            <p class="text-gray-600">University of Technology</p>
+          </div>
+        </div>
+        <p class="text-gray-700 italic">
+          "CertChain has revolutionized how we issue and verify academic
+          credentials. The blockchain technology ensures complete security and
+          transparency."
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Section -->
+<div class="bg-white py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16">Get in Touch</h2>
+      <form class="space-y-6">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700"
+            >Name</label
+          >
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700"
+            >Email</label
+          >
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-700"
+            >Message</label
+          >
+          <textarea
+            id="message"
+            name="message"
+            rows="4"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          ></textarea>
+        </div>
+        <div>
+          <button
+            type="submit"
+            class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
+          >
+            Send Message
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Blockchain Connection Section -->
+<div class="bg-white py-20" id="blockchain-section">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16">
+        Blockchain Connection
+      </h2>
+      <div class="space-y-6">
+        <div id="wallet-status" class="text-center mb-8">
+          <p class="text-gray-700 mb-4">
+            Wallet Status:
+            <span id="wallet-connection" class="font-semibold text-red-600"
+              >Not Connected</span
+            >
+          </p>
+          <button
+            onclick="connectWallet()"
+            id="connect-wallet"
+            class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
+          >
+            Connect MetaMask
+          </button>
+        </div>
+        <div id="network-info" class="text-center hidden">
+          <p class="text-gray-700 mb-2">
+            Connected Account:
+            <span id="account-address" class="font-mono"></span>
+          </p>
+          <p class="text-gray-700">
+            Network: <span id="network-name" class="font-semibold"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Web3 and custom scripts -->
+<script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+<script>
+  let web3;
+  let account;
+
+  // Check if MetaMask is installed
+  const isMetaMaskInstalled = () => {
+    return typeof window.ethereum !== "undefined";
+  };
+
+  // Initialize Web3
+  async function initWeb3() {
+    if (isMetaMaskInstalled()) {
+      try {
+        // Request account access
+        account = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        web3 = new Web3(window.ethereum);
+
+        // Update UI
+        document.getElementById("wallet-connection").textContent = "Connected";
+        document
+          .getElementById("wallet-connection")
+          .classList.remove("text-red-600");
+        document
+          .getElementById("wallet-connection")
+          .classList.add("text-green-600");
+        document.getElementById("account-address").textContent = account[0];
+        document.getElementById("network-info").classList.remove("hidden");
+
+        // Get network information
+        const networkId = await web3.eth.net.getId();
+        let networkName;
+        switch (networkId) {
+          case 1337:
+            networkName = "Ganache";
+            break;
+          case 1:
+            networkName = "Ethereum Mainnet";
+            break;
+          default:
+            networkName = "Unknown Network";
+        }
+        document.getElementById("network-name").textContent = networkName;
+
+        // Listen for account changes
+        window.ethereum.on("accountsChanged", function (accounts) {
+          account = accounts[0];
+          document.getElementById("account-address").textContent = account;
+        });
+      } catch (error) {
+        console.error("User denied account access:", error);
+      }
+    } else {
+      alert("Please install MetaMask!");
+    }
+  }
+
+  // Connect wallet function
+  async function connectWallet() {
+    await initWeb3();
+  }
+
+  // Function to verify certificate on blockchain
+  async function verifyCertificate(certificateHash) {
+    try {
+      // Add your smart contract interaction here
+      const contractAddress = "0x63f800EBdD79d3F42dD8c3De55A8926d04DC19a4 "; // Your deployed contract address
+      const contractABI = []; // Your contract ABI here
+
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+      const result = await contract.methods
+        .verifyCertificate(certificateHash)
+        .call();
+      return result;
+    } catch (error) {
+      console.error("Error verifying certificate:", error);
+      return false;
+    }
+  }
+
+  // Function to issue certificate on blockchain
+  async function issueCertificate(certificateData) {
+    try {
+      const contractAddress = "0x123..."; // Your deployed contract address
+      const contractABI = []; // Your contract ABI here
+
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+      const gas = await contract.methods
+        .issueCertificate(certificateData)
+        .estimateGas({ from: account[0] });
+
+      const result = await contract.methods
+        .issueCertificate(certificateData)
+        .send({
+          from: account[0],
+          gas: gas,
+        });
+      return result;
+    } catch (error) {
+      console.error("Error issuing certificate:", error);
+      throw error;
+    }
+  }
+</script>
+
+<!-- Add this CSS to your main.css file -->
+<style>
+@keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 15s ease infinite;
+}
+
+.bg-grid-white {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.animate-slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+}
+
+.animate-slide-out {
+    animation: slideOut 0.5s ease-in forwards;
+}
+</style>
+{% endblock %}

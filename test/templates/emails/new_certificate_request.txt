@@ -1,0 +1,12 @@
+New Certificate Request
+
+A new certificate request requires your approval:
+
+Student Name: {{ student_name }}
+Student ID: {{ student_id }}
+Course: {{ course_name }}
+Request ID: {{ request_id }}
+Submitted: {{ request_date }}
+
+Please review this request in your dashboard:
+{{ dashboard_url }} 

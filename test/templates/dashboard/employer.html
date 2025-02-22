@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Employer Dashboard</h1>
+            <p class="text-gray-600 mt-1">Welcome back, {{ user.username }}</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="wallet-address bg-gray-100 px-4 py-2 rounded-md text-sm">
+                {{ user.wallet_address|default:"Connect Wallet" }}
+            </span>
+            <a href="{% url 'certificates:issue' %}" 
+               class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors">
+                Issue Certificate
+            </a>
+        </div>
+    </div>
+
+    <!-- Certificate Management Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">Issued Certificates</h2>
+            <select class="border border-gray-300 rounded-md px-3 py-2">
+                <option value="all">All Status</option>
+                <option value="verified">Verified</option>
+                <option value="revoked">Revoked</option>
+            </select>
+        </div>
+
+        <!-- Certificates List -->
+        <div class="space-y-4">
+            {% if certificates %}
+                {% for certificate in certificates %}
+                    <div class="border rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium">{{ certificate.title }}</h3>
+                            <p class="text-sm text-gray-600">Issued to: {{ certificate.student_name }}</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="px-3 py-1 rounded-full text-sm 
+                                {% if certificate.status == 'verified' %}
+                                    bg-green-100 text-green-800
+                                {% else %}
+                                    bg-red-100 text-red-800
+                                {% endif %}">
+                                {{ certificate.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-500 text-center py-4">No certificates issued yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

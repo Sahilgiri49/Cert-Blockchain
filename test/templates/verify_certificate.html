@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Verify Certificate</h2>
+            <p class="mt-2 text-gray-600">Enter certificate hash or scan QR code to verify authenticity</p>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="hashTab" 
+                        class="px-6 py-2 border-b-2 border-indigo-500 text-indigo-600 font-medium">
+                    Enter Hash
+                </button>
+                <button id="qrTab" 
+                        class="px-6 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium">
+                    Scan QR
+                </button>
+            </div>
+
+            <!-- Hash Input Form -->
+            <form id="hashForm" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Certificate Hash</label>
+                    <div class="mt-1">
+                        <input type="text" 
+                               id="certificate_hash" 
+                               name="certificate_hash" 
+                               required
+                               placeholder="Enter the certificate hash"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Verify Certificate
+                    </button>
+                </div>
+            </form>
+
+            <!-- QR Scanner -->
+            <div id="qrScanner" class="hidden space-y-6">
+                <div class="relative">
+                    <video id="qrVideo" class="w-full rounded-lg"></video>
+                    <div class="absolute inset-0 border-2 border-indigo-500 rounded-lg pointer-events-none"></div>
+                </div>
+                <p class="text-sm text-gray-500 text-center">Position the QR code within the frame to scan</p>
+            </div>
+
+            <!-- Verification Result -->
+            <div id="verification-result" class="mt-6 hidden"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500"></div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+let html5QrcodeScanner = null;
+
+// Tab switching logic
+document.getElementById('hashTab').addEventListener('click', () => {
+    document.getElementById('hashForm').classList.remove('hidden');
+    document.getElementById('qrScanner').classList.add('hidden');
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop();
+    }
+});
+
+document.getElementById('qrTab').addEventListener('click', () => {
+    document.getElementById('hashForm').classList.add('hidden');
+    document.getElementById('qrScanner').classList.remove('hidden');
+    startQRScanner();
+});
+
+function startQRScanner() {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.start();
+        return;
+    }
+
+    html5QrcodeScanner = new Html5QrcodeScanner("qrScanner", { fps: 10 });
+    html5QrcodeScanner.render((decodedText) => {
+        // Extract hash from QR code URL if needed
+        const hash = decodedText.split('/').pop();
+        document.getElementById('certificate_hash').value = hash;
+        verifyCertificate(hash);
+        html5QrcodeScanner.pause();
+    });
+}
+
+async function verifyCertificate(hash) {
+    showLoading();
+    try {
+        const response = await fetch(`/certificates/verify/${hash}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        displayVerificationResult(data.status === 'success' ? 'success' : 'error', data);
+    } catch (error) {
+        displayVerificationResult('error', { message: error.message });
+    } finally {
+        hideLoading();
+    }
+}
+
+function showLoading() {
+    document.getElementById('loadingSpinner').classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner').classList.add('hidden');
+}
+
+function displayVerificationResult(status, data) {
+    const resultDiv = document.getElementById('verification-result');
+    
+    if (status === 'success') {
+        resultDiv.innerHTML = `
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4">
+                <p class="font-bold">✅ Certificate Verified Successfully!</p>
+                <div class="mt-2">
+                    <h3 class="font-bold">Certificate Details:</h3>
+                    <p><strong>Student:</strong> ${data.student_name}</p>
+                    <p><strong>Course:</strong> ${data.course_name}</p>
+                    <p><strong>Issue Date:</strong> ${data.issue_date}</p>
+                    <p><strong>Issuer:</strong> ${data.issuer}</p>
+                    
+                    <h3 class="font-bold mt-4">Verification Status:</h3>
+                    <p><strong>Document Hash Match:</strong> ${data.hash_valid ? '✓' : '✗'}</p>
+                    <p><strong>Blockchain Verification:</strong> ${data.blockchain_valid ? '✓' : '✗'}</p>
+                    
+                    <h3 class="font-bold mt-4">Blockchain Details:</h3>
+                    <p><strong>Transaction Hash:</strong> ${data.blockchain_tx || 'N/A'}</p>
+                </div>
+            </div>
+        `;
+    } else {
+        resultDiv.innerHTML = `
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                <p class="font-bold">❌ Verification Failed</p>
+                <div class="mt-2">
+                    ${data.message ? `<p>${data.message}</p>` : ''}
+                    ${data.hash_valid !== undefined ? `<p>Document Hash: ${data.hash_valid ? '✓' : '✗'}</p>` : ''}
+                    ${data.blockchain_valid !== undefined ? `<p>Blockchain Verification: ${data.blockchain_valid ? '✓' : '✗'}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %} 
