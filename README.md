@@ -158,7 +158,7 @@ contract CertificateContract {
 ---
 
 ## Contributors
-- **Yash Barai** - [GitHub](https://github.com/YashBarai)
+- **sahil giri** - [GitHub](https://github.com/Sahilgiri49)
 
 ---
 
